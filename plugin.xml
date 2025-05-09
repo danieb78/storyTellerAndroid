@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin id="cordova-plugin-storyteller" version="1.0.0" xmlns="http://apache.org/cordova/ns/plugins/1.0"
+    xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+    
+    <name>StorytellerPlugin</name>
+    <description>Plugin to use the Storyteller SDK in your app</description>
+    
+    <engines>
+        <engine name="cordova" version=">=11.0.0" />
+    </engines>
+    
+    <js-module src="www/storyteller.js" name="Storyteller">
+        <clobbers target="cordova.plugins.storyteller" />
+    </js-module>
+    
+    <platform name="android">
+        <framework src="src/android/build.gradle" custom="true" type="gradleReference"/>
+        <source-file src="src/android/StorytellerHandler.kt" target-dir="app/src/main/java/com/example/benficastoryteller" />
+        <source-file src="src/android/StorytellerController.kt" target-dir="app/src/main/java/com/example/benficastoryteller" />
+        <source-file src="src/android/StorytellerPlugin.kt" target-dir="app/src/main/java/com/example/benficastoryteller" />
+        <source-file src="src/android/StorytellerViewActivity.kt" target-dir="app/src/main/java/com/example/benficastoryteller" />
+        
+        <!-- Add Tools Namespace in AndroidManifest.xml -->
+        <edit-config file="AndroidManifest.xml" mode="merge" target="/manifest">
+            <manifest xmlns:tools="http://schemas.android.com/tools" />
+        </edit-config>
+
+        <!-- Custom Activity Declaration in AndroidManifest.xml -->
+        <config-file target="AndroidManifest.xml" parent="/manifest/application">
+            <activity android:exported="true"
+                      android:name="com.example.benficastoryteller.StorytellerViewActivity"/>
+        </config-file>
+
+         <!-- Ensure internet permission -->
+        <config-file target="AndroidManifest.xml" parent="/manifest">
+            <uses-permission android:name="android.permission.INTERNET"/>
+        </config-file>
+        
+        <!-- Custom Provider Declaration in AndroidManifest.xml -->
+        <edit-config file="AndroidManifest.xml" target="/manifest/application/provider[@android:name='androidx.core.content.FileProvider']" mode="overwrite">
+            <provider android:authorities="${applicationId}.cdv.core.file.provider" 
+            android:exported="false" 
+            android:grantUriPermissions="true" 
+            android:name="androidx.core.content.FileProvider" 
+            tools:replace="android:authorities">
+            </provider>
+        </edit-config>
+        <!-- Custom meta-data Declaration in AndroidManifest.xml -->
+        <edit-config file="AndroidManifest.xml" 
+                     target="/manifest/application/provider[@android:name='androidx.core.content.FileProvider']/meta-data[@android:name='android.support.FILE_PROVIDER_PATHS']" 
+                     mode="overwrite">
+            <meta-data 
+                android:name="android.support.FILE_PROVIDER_PATHS" 
+                android:resource="@xml/cdv_core_file_provider_paths" 
+                tools:replace="android:resource" />
+        </edit-config>
+        <!-- Config android package -->
+        <config-file parent="/*" target="res/xml/config.xml">
+            <feature name="Storyteller">
+                <param name="android-package" value="com.example.benficastoryteller.CDVStoryteller" />
+            </feature>
+        </config-file>
+    </platform>
+</plugin>
