@@ -37,7 +37,7 @@
         </config-file>
         
         <!-- Custom Provider Declaration in AndroidManifest.xml -->
-        <edit-config file="AndroidManifest.xml" target="/manifest/application/provider[@android:name='androidx.core.content.FileProvider']" mode="overwrite">
+        <edit-config file="AndroidManifest.xml" target="/manifest/application/provider[@android:name='androidx.core.content.FileProvider']" mode="merge">
             <provider android:authorities="${applicationId}.cdv.core.file.provider" 
             android:exported="false" 
             android:grantUriPermissions="true" 
@@ -48,7 +48,7 @@
         <!-- Custom meta-data Declaration in AndroidManifest.xml -->
         <edit-config file="AndroidManifest.xml" 
                      target="/manifest/application/provider[@android:name='androidx.core.content.FileProvider']/meta-data[@android:name='android.support.FILE_PROVIDER_PATHS']" 
-                     mode="overwrite">
+                     mode="merge">
             <meta-data 
                 android:name="android.support.FILE_PROVIDER_PATHS" 
                 android:resource="@xml/cdv_core_file_provider_paths" 
