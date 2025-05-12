@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const xml2js = require('xml2js');
 
+// Adjust the path as needed
 const manifestPath = path.join(__dirname, '../../../platforms/android/app/src/main/AndroidManifest.xml');
 
 console.log(`Modifying AndroidManifest.xml at path: ${manifestPath}`);
@@ -20,42 +21,45 @@ fs.readFile(manifestPath, 'utf8', (err, data) => {
             return;
         }
 
-        // Add Tools Namespace in AndroidManifest.xml
-        if (result.manifest.$['xmlns:tools'] === undefined) {
-            result.manifest.$['xmlns:tools'] = 'http://schemas.android.com/tools';
-        }
-
-        // Custom Activity Declaration in AndroidManifest.xml
-        if (result.manifest.application && result.manifest.application[0].activity === undefined) {
-            result.manifest.application[0].activity = [{
-                $: {
-                    'android:exported': 'true',
-                    'android:name': 'com.example.benficastoryteller.StorytellerViewActivity'
-                }
-            }];
-        }
-
-        // Ensure internet permission
-        if (!result.manifest['uses-permission']) {
-            result.manifest['uses-permission'] = [];
-        }
-        result.manifest['uses-permission'].push({
-            $: {
-                'android:name': 'android.permission.INTERNET'
-            }
-        });
-
         // Ensure application array exists
         if (!result.manifest.application) {
             result.manifest.application = [{}];
         }
 
         const app = result.manifest.application[0];
+        
+        // Add Tools Namespace in AndroidManifest.xml
+        if (!result.manifest.$) {
+            result.manifest.$ = {};
+        }
+        
+        if (result.manifest.$['xmlns:tools'] === undefined) {
+            result.manifest.$['xmlns:tools'] = 'http://schemas.android.com/tools';
+        }
+
+        // Ensure activity array exists
+        if (!app.activity) {
+            app.activity = [];
+        }
+        
+        const activityIndex = app.activity.findIndex(activity => activity.$['android:name'] === 'com.example.benficastoryteller.StorytellerViewActivity');
+        
+        if (activityIndex === -1) {
+            app.activity.push({
+                $: {
+                    'android:exported': 'true',
+                    'android:name': 'com.example.benficastoryteller.StorytellerViewActivity'
+                }
+            });
+            console.log("Activity added.");
+        } else {
+            console.log("Activity already exists.");
+        }
 
         // Ensure provider array exists
         if (!app.provider) {
             app.provider = [];
-        }
+        } 
         
         const providers = app.provider;
         const providerIndex = providers.findIndex(provider => provider.$['android:name'] === 'androidx.core.content.FileProvider');
@@ -76,7 +80,7 @@ fs.readFile(manifestPath, 'utf8', (err, data) => {
             providers.push(customProvider);
         }
 
-        if (!providers[providerIndex]['meta-data']) {
+        if (providerIndex !== -1 && !providers[providerIndex]['meta-data']) {
             providers[providerIndex]['meta-data'] = [];
         }
 
@@ -89,12 +93,14 @@ fs.readFile(manifestPath, 'utf8', (err, data) => {
             }
         };
 
-        const metaDataIndex = providers[providerIndex]['meta-data'].findIndex(meta => meta.$['android:name'] === 'android.support.FILE_PROVIDER_PATHS');
-        
-        if (metaDataIndex !== -1) {
-            providers[providerIndex]['meta-data'][metaDataIndex] = metaData;
-        } else {
-            providers[providerIndex]['meta-data'].push(metaData);
+        if (providerIndex !== -1) {
+            const metaDataIndex = providers[providerIndex]['meta-data'].findIndex(meta => meta.$['android:name'] === 'android.support.FILE_PROVIDER_PATHS');
+            
+            if (metaDataIndex !== -1) {
+                providers[providerIndex]['meta-data'][metaDataIndex] = metaData;
+            } else {
+                providers[providerIndex]['meta-data'].push(metaData);
+            }
         }
 
         app.provider = providers;
