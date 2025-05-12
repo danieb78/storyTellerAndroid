@@ -4,7 +4,9 @@ const fs = require('fs');
 const path = require('path');
 const xml2js = require('xml2js');
 
-const manifestPath = path.join(__dirname, '../platforms/android/app/src/main/AndroidManifest.xml');
+const manifestPath = path.join(__dirname, '../../../platforms/android/app/src/main/AndroidManifest.xml');
+
+console.log(`Modifying AndroidManifest.xml at path: ${manifestPath}`);
 
 fs.readFile(manifestPath, 'utf8', (err, data) => {
     if (err) {
@@ -43,13 +45,24 @@ fs.readFile(manifestPath, 'utf8', (err, data) => {
             }
         });
 
-        // Custom Provider Declaration in AndroidManifest.xml
-        const providers = result.manifest.application[0].provider || [];
-        const providerIndex = providers.findIndex(provider => provider.$['android:name'] === 'androidx.core.content.FileProvider');
+        // Ensure application array exists
+        if (!result.manifest.application) {
+            result.manifest.application = [{}];
+        }
+
+        const app = result.manifest.application[0];
+
+        // Ensure provider array exists
+        if (!app.provider) {
+            app.provider = [];
+        }
         
+        const providers = app.provider;
+        const providerIndex = providers.findIndex(provider => provider.$['android:name'] === 'androidx.core.content.FileProvider');
+
         const customProvider = {
             $: {
-                'android:authorities': '${applicationId}.cdv.core.file.provider',
+                'android:authorities': 'com.example.benficastoryteller.cdv.core.file.provider',
                 'android:exported': 'false',
                 'android:grantUriPermissions': 'true',
                 'android:name': 'androidx.core.content.FileProvider',
@@ -62,7 +75,10 @@ fs.readFile(manifestPath, 'utf8', (err, data) => {
         } else {
             providers.push(customProvider);
         }
-        result.manifest.application[0].provider = providers;
+
+        if (!providers[providerIndex]['meta-data']) {
+            providers[providerIndex]['meta-data'] = [];
+        }
 
         // Custom meta-data Declaration in AndroidManifest.xml
         const metaData = {
@@ -78,9 +94,11 @@ fs.readFile(manifestPath, 'utf8', (err, data) => {
         if (metaDataIndex !== -1) {
             providers[providerIndex]['meta-data'][metaDataIndex] = metaData;
         } else {
-            providers[providerIndex]['meta-data'] = [metaData];
+            providers[providerIndex]['meta-data'].push(metaData);
         }
-        
+
+        app.provider = providers;
+
         // Convert back to XML
         const builder = new xml2js.Builder();
         const modifiedXml = builder.buildObject(result);
