@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
-    def javaVersion = JavaVersion.VERSION_1_8
+    def javaVersion = JavaVersion.VERSION_11
     compileSdkVersion 35
 
     defaultConfig {
@@ -24,18 +24,19 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility javaVersion
-        targetCompatibility javaVersion
+        sourceCompatibility javaVersion.VERSION_11
+        targetCompatibility javaVersion.VERSION_11
     }
 
     kotlinOptions {
         jvmTarget = "11"
+        freeCompilerArgs += "-Xjvm-target-validation-mode=ignore"
     }
 
     kotlin {
-        jvmToolchain {
-            languageVersion = JavaLanguageVersion.of(18)
-        }
+        /*jvmToolchain {
+            languageVersion = JavaLanguageVersion.of(11)
+        }*/
     }
 
     buildFeatures {
