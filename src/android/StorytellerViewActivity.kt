@@ -64,6 +64,7 @@ fun MainScreen(controller: StorytellerController) {
                 .height(120.dp),
             dataModel = storiesDataModel,
             delegate = listViewDelegate,
+            cellType = StorytellerListViewCellType.ROUND,
             state = rememberStorytellerRowState()
         )
 
@@ -76,6 +77,7 @@ fun MainScreen(controller: StorytellerController) {
                 .height(300.dp),
             dataModel = storiesDataModel,
             delegate = listViewDelegate,
+            cellType = StorytellerListViewCellType.ROUND,
             state = rememberStorytellerGridState(),
             isScrollable = true,
             isEnabled = true
